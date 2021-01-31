@@ -1,0 +1,48 @@
+version: '3.5' 
+networks: 
+  frontend:
+  backend:
+
+services:
+
+  proxy:
+    build: ./proxy
+    container_name: proxy
+    ports: 
+    - 80:80
+    - 443:443
+    networks: 
+      - frontend
+      - backend
+    depends_on: 
+    - backend
+
+
+  database:
+    build: ./database
+    container_name: database
+    environment:
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_HOST: localhost
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+    volumes:
+     - ./database/db.sql:/docker-entrypoint-initdb.d/db.sql
+    expose: 
+      - "3306"
+    networks: 
+      - backend
+      
+  
+  backend:
+    depends_on: 
+    - database
+    build: ./backend
+    container_name: backend
+    expose: 
+      - "5000"
+    networks: 
+      - backend
+      - frontend
+
